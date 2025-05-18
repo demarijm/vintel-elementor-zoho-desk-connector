@@ -32,7 +32,6 @@ register_deactivation_hook( __FILE__, 'vintel_zoho_deactivate' );
 
 // Initialize plugin after all plugins are loaded.
 function vintel_zoho_init() {
-    $loader = new Vintel_Zoho_Loader();
-    $loader->init();
+    Vintel_Zoho_Loader::get_instance();
 }
 add_action( 'plugins_loaded', 'vintel_zoho_init' );

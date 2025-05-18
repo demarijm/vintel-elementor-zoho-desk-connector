@@ -148,4 +148,3 @@ class Vintel_Zoho_Loader {
     }
 }
 
-Vintel_Zoho_Loader::get_instance();
