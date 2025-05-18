@@ -30,6 +30,8 @@ class Vintel_Zoho_API {
 
         $payload = $this->build_payload( $data );
 
+        vintel_zoho_log( 'Creating ticket payload: ' . wp_json_encode( $payload ) );
+
         $args = array(
             'headers' => array(
                 'Authorization' => 'Zoho-oauthtoken ' . $token,
@@ -41,6 +43,12 @@ class Vintel_Zoho_API {
 
         $response = wp_remote_post( $this->endpoint, $args );
 
+        vintel_zoho_log( array(
+            'request_url'  => $this->endpoint,
+            'response'     => is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response ),
+            'status_code'  => is_wp_error( $response ) ? 0 : wp_remote_retrieve_response_code( $response ),
+        ) );
+
         if ( is_wp_error( $response ) ) {
             return $response;
         }
@@ -49,13 +57,15 @@ class Vintel_Zoho_API {
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( $code >= 200 && $code < 300 ) {
+            vintel_zoho_log( 'Ticket created successfully' );
             return $body;
         }
 
         if ( isset( $body['message'] ) ) {
+            vintel_zoho_log( 'Zoho error: ' . $body['message'] );
             return new WP_Error( 'zoho_error', $body['message'] );
         }
-
+        vintel_zoho_log( 'Zoho error: unknown error' );
         return new WP_Error( 'zoho_error', __( 'Unknown error from Zoho Desk.', 'vintel-zoho-desk-connector' ) );
     }
 
@@ -101,6 +111,8 @@ class Vintel_Zoho_API {
         $client_id     = get_option( 'vintel_zoho_client_id' );
         $client_secret = get_option( 'vintel_zoho_client_secret' );
 
+        vintel_zoho_log( 'Refreshing access token...' );
+
         if ( empty( $client_id ) || empty( $client_secret ) ) {
             return new WP_Error( 'missing_credentials', __( 'Zoho Desk credentials are missing.', 'vintel-zoho-desk-connector' ) );
         }
@@ -113,6 +125,11 @@ class Vintel_Zoho_API {
                 'grant_type'    => 'refresh_token',
             ),
             'timeout' => 20,
+        ) );
+
+        vintel_zoho_log( array(
+            'refresh_request' => 'token',
+            'response'        => is_wp_error( $response ) ? $response->get_error_message() : wp_remote_retrieve_body( $response ),
         ) );
 
         if ( is_wp_error( $response ) ) {
@@ -129,13 +146,17 @@ class Vintel_Zoho_API {
             update_option( 'zoho_access_token', $access_token );
             update_option( 'zoho_token_expires_at', time() + $expires_in );
 
+            vintel_zoho_log( 'Access token refreshed successfully' );
+
             return $access_token;
         }
 
         if ( isset( $body['error'] ) ) {
+            vintel_zoho_log( 'Token refresh error: ' . $body['error'] );
             return new WP_Error( 'token_refresh_error', $body['error'] );
         }
 
+        vintel_zoho_log( 'Token refresh error: unknown error' );
         return new WP_Error( 'token_refresh_error', __( 'Unable to refresh Zoho token.', 'vintel-zoho-desk-connector' ) );
     }
 }
