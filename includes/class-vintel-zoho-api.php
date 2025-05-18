@@ -85,9 +85,9 @@ class Vintel_Zoho_API {
      * @return string|WP_Error Access token string or WP_Error on failure.
      */
     private function maybe_refresh_token() {
-        $access_token  = get_option( 'vintel_zoho_access_token' );
-        $refresh_token = get_option( 'vintel_zoho_refresh_token' );
-        $expires_at    = (int) get_option( 'vintel_zoho_token_expires_at' );
+        $access_token  = get_option( 'zoho_access_token' );
+        $refresh_token = get_option( 'zoho_refresh_token' );
+        $expires_at    = (int) get_option( 'zoho_token_expires_at' );
 
         if ( empty( $access_token ) || empty( $refresh_token ) ) {
             return new WP_Error( 'missing_tokens', __( 'Zoho Desk tokens are missing.', 'vintel-zoho-desk-connector' ) );
@@ -126,8 +126,8 @@ class Vintel_Zoho_API {
             $access_token = sanitize_text_field( $body['access_token'] );
             $expires_in   = isset( $body['expires_in'] ) ? intval( $body['expires_in'] ) : 3600;
 
-            update_option( 'vintel_zoho_access_token', $access_token );
-            update_option( 'vintel_zoho_token_expires_at', time() + $expires_in );
+            update_option( 'zoho_access_token', $access_token );
+            update_option( 'zoho_token_expires_at', time() + $expires_in );
 
             return $access_token;
         }
