@@ -2,9 +2,11 @@
 /**
  * Plugin Name: Vintel Elementor to Zoho Desk Connector
  * Description: Sends Elementor form submissions to Zoho Desk as support tickets.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Vintel
  * Text Domain: vintel-zoho-desk-connector
+ * Requires at least: 5.0
+ * Tested up to: 6.5
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
