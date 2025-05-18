@@ -50,9 +50,9 @@ class Vintel_Zoho_Loader {
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_id' );
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_secret' );
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_redirect_uri' );
-        register_setting( 'vintel_zoho_settings', 'vintel_zoho_access_token' );
-        register_setting( 'vintel_zoho_settings', 'vintel_zoho_refresh_token' );
-        register_setting( 'vintel_zoho_settings', 'vintel_zoho_token_expires_at' );
+        register_setting( 'vintel_zoho_settings', 'zoho_access_token' );
+        register_setting( 'vintel_zoho_settings', 'zoho_refresh_token' );
+        register_setting( 'vintel_zoho_settings', 'zoho_token_expires_at' );
     }
 
     private function get_auth_url() {
@@ -105,8 +105,8 @@ class Vintel_Zoho_Loader {
             <hr />
 
             <?php
-            $token      = get_option( 'vintel_zoho_access_token' );
-            $expires_at = get_option( 'vintel_zoho_token_expires_at' );
+            $token      = get_option( 'zoho_access_token' );
+            $expires_at = get_option( 'zoho_token_expires_at' );
             if ( $token ) {
                 echo '<p>' . sprintf( esc_html__( 'Access Token Expires: %s', 'vintel-zoho-desk-connector' ), esc_html( $expires_at ) ) . '</p>';
             } else {
