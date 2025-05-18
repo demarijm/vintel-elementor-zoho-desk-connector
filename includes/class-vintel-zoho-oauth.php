@@ -52,11 +52,17 @@ class Vintel_Zoho_OAuth {
             'grant_type'    => 'authorization_code',
         );
 
+        vintel_zoho_log( 'Requesting Zoho tokens with authorization code' );
+
         $response = wp_remote_post( $url, array( 'body' => $body ) );
         if ( is_wp_error( $response ) ) {
-            error_log( 'Zoho token request failed: ' . $response->get_error_message() );
+            vintel_zoho_log( 'Token request failed: ' . $response->get_error_message() );
             return;
         }
+
+        vintel_zoho_log( array(
+            'response' => wp_remote_retrieve_body( $response ),
+        ) );
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
         if ( isset( $data['access_token'] ) ) {
@@ -68,6 +74,8 @@ class Vintel_Zoho_OAuth {
         if ( isset( $data['expires_in'] ) ) {
             update_option( 'zoho_token_expires_at', time() + intval( $data['expires_in'] ) );
         }
+
+        vintel_zoho_log( 'Authorization code exchanged successfully' );
     }
 
     public function get_access_token() {
@@ -79,6 +87,7 @@ class Vintel_Zoho_OAuth {
         }
 
         if ( time() >= $expires_at ) {
+            vintel_zoho_log( 'Stored token expired, refreshing' );
             $token = $this->refresh_access_token();
         }
 
@@ -91,6 +100,8 @@ class Vintel_Zoho_OAuth {
             return '';
         }
 
+        vintel_zoho_log( 'Refreshing Zoho access token' );
+
         $url  = 'https://accounts.zoho.com/oauth/v2/token';
         $body = array(
             'refresh_token' => $refresh,
@@ -101,9 +112,13 @@ class Vintel_Zoho_OAuth {
 
         $response = wp_remote_post( $url, array( 'body' => $body ) );
         if ( is_wp_error( $response ) ) {
-            error_log( 'Zoho token refresh failed: ' . $response->get_error_message() );
+            vintel_zoho_log( 'Token refresh failed: ' . $response->get_error_message() );
             return '';
         }
+
+        vintel_zoho_log( array(
+            'response' => wp_remote_retrieve_body( $response ),
+        ) );
 
         $data = json_decode( wp_remote_retrieve_body( $response ), true );
         if ( isset( $data['access_token'] ) ) {
@@ -112,6 +127,8 @@ class Vintel_Zoho_OAuth {
         if ( isset( $data['expires_in'] ) ) {
             update_option( 'zoho_token_expires_at', time() + intval( $data['expires_in'] ) );
         }
+
+        vintel_zoho_log( 'Access token refreshed successfully' );
 
         return get_option( 'zoho_access_token', '' );
     }
