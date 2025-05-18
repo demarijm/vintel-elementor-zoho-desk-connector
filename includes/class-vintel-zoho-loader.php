@@ -16,17 +16,23 @@ class Vintel_Zoho_Loader {
 
     private function __construct() {
         require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-oauth.php';
-        require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-api.php'; // ← included from feature branch
+        require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-api.php';
+        require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-elementor-action.php';
 
         $this->oauth = new Vintel_Zoho_OAuth();
 
         add_action( 'admin_post_zoho_auth', array( $this->oauth, 'handle_auth_code' ) );
         add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
+        add_action( 'elementor_pro/forms/actions/register', [ $this, 'register_elementor_actions' ] );
     }
 
     public function get_oauth() {
         return $this->oauth;
+    }
+
+    public function register_elementor_actions( $actions ) {
+        $actions->register( new Vintel_Zoho_Elementor_Action() );
     }
 
     public function add_settings_page() {
