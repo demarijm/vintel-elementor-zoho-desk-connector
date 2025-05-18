@@ -16,3 +16,5 @@ define( 'VINTEL_ZOHO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 // Load includes
 require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-loader.php';
+
+Vintel_Zoho_Loader::get_instance();
