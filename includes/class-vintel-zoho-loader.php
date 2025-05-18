@@ -16,6 +16,8 @@ class Vintel_Zoho_Loader {
 
     private function __construct() {
         require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-oauth.php';
+        require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-api.php'; // ← included from feature branch
+
         $this->oauth = new Vintel_Zoho_OAuth();
 
         add_action( 'admin_post_zoho_auth', array( $this->oauth, 'handle_auth_code' ) );
@@ -38,10 +40,7 @@ class Vintel_Zoho_Loader {
     }
 
     public function register_settings() {
-        // Debug setting
         register_setting( 'vintel_zoho_options', 'vintel_zoho_debug' );
-
-        // Zoho OAuth settings
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_id' );
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_secret' );
         register_setting( 'vintel_zoho_settings', 'vintel_zoho_redirect_uri' );
@@ -77,9 +76,7 @@ class Vintel_Zoho_Loader {
             <h1><?php esc_html_e( 'Vintel Zoho Desk Settings', 'vintel-zoho-desk-connector' ); ?></h1>
 
             <form method="post" action="options.php">
-                <?php
-                settings_fields( 'vintel_zoho_settings' );
-                ?>
+                <?php settings_fields( 'vintel_zoho_settings' ); ?>
                 <table class="form-table" role="presentation">
                     <tbody>
                         <tr>
@@ -145,5 +142,4 @@ class Vintel_Zoho_Loader {
     }
 }
 
-// Bootstrap the singleton
 Vintel_Zoho_Loader::get_instance();
