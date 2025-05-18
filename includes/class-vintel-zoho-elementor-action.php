@@ -54,6 +54,16 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
             ]
         );
 
+        $widget->add_control(
+            'vintel_zoho_department_id',
+            [
+                'label'       => __( 'Department ID', 'vintel-zoho-desk-connector' ),
+                'type'        => \Elementor\Controls_Manager::TEXT,
+                'description' => __( 'Optional Zoho Desk department ID', 'vintel-zoho-desk-connector' ),
+                'dynamic'     => [ 'active' => true ],
+            ]
+        );
+
         $widget->end_controls_section();
     }
 
@@ -66,7 +76,33 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
     }
 
     public function run( $record, $ajax_handler ) {
-        // TODO: Implement API call to Zoho Desk.
+        $settings = $record->get( 'form_settings' );
+        $fields   = $record->get( 'fields' );
+
+        $email_field   = $settings['vintel_zoho_email_field'] ?? '';
+        $subject_field = $settings['vintel_zoho_subject_field'] ?? '';
+        $message_field = $settings['vintel_zoho_message_field'] ?? '';
+
+        $email       = isset( $fields[ $email_field ]['value'] ) ? $fields[ $email_field ]['value'] : '';
+        $subject     = isset( $fields[ $subject_field ]['value'] ) ? $fields[ $subject_field ]['value'] : '';
+        $description = isset( $fields[ $message_field ]['value'] ) ? $fields[ $message_field ]['value'] : '';
+        $department  = $settings['vintel_zoho_department_id'] ?? '';
+
+        $api    = new Vintel_Zoho_API();
+        $result = $api->create_ticket(
+            [
+                'email'        => $email,
+                'subject'      => $subject,
+                'description'  => $description,
+                'department_id'=> $department,
+            ]
+        );
+
+        if ( is_wp_error( $result ) ) {
+            $ajax_handler->add_error_message( __( 'Failed to create Zoho Desk ticket.', 'vintel-zoho-desk-connector' ) );
+            $ajax_handler->is_success = false;
+            vintel_zoho_log( 'Zoho error: ' . $result->get_error_message() );
+        }
     }
 
     public function on_export( $element ) {
