@@ -23,3 +23,22 @@ function vintel_zoho_activate() {
 // Load includes
 require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/functions.php';
 require_once VINTEL_ZOHO_PLUGIN_PATH . 'includes/class-vintel-zoho-loader.php';
+
+// Activation hook
+function vintel_zoho_activate() {
+    // Placeholder for activation logic.
+}
+register_activation_hook( __FILE__, 'vintel_zoho_activate' );
+
+// Deactivation hook
+function vintel_zoho_deactivate() {
+    // Placeholder for deactivation logic.
+}
+register_deactivation_hook( __FILE__, 'vintel_zoho_deactivate' );
+
+// Initialize plugin after all plugins are loaded.
+function vintel_zoho_init() {
+    $loader = new Vintel_Zoho_Loader();
+    $loader->init();
+}
+add_action( 'plugins_loaded', 'vintel_zoho_init' );

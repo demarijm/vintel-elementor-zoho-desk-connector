@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Vintel_Zoho_Loader {
+
     public function __construct() {
         add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -20,18 +21,91 @@ class Vintel_Zoho_Loader {
     }
 
     public function register_settings() {
+        // Debug setting
         register_setting( 'vintel_zoho_options', 'vintel_zoho_debug' );
+
+        // Zoho OAuth settings
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_id' );
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_client_secret' );
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_redirect_uri' );
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_access_token' );
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_refresh_token' );
+        register_setting( 'vintel_zoho_settings', 'vintel_zoho_token_expires_at' );
+    }
+
+    private function get_auth_url() {
+        $client_id = get_option( 'vintel_zoho_client_id' );
+        $redirect_uri = get_option( 'vintel_zoho_redirect_uri' );
+
+        if ( ! $client_id || ! $redirect_uri ) {
+            return '#';
+        }
+
+        $params = array(
+            'scope' => 'Desk.tickets.ALL',
+            'client_id' => $client_id,
+            'response_type' => 'code',
+            'redirect_uri' => $redirect_uri,
+            'access_type' => 'offline',
+            'prompt' => 'consent',
+        );
+
+        return 'https://accounts.zoho.com/oauth/v2/auth?' . http_build_query( $params, '', '&' );
     }
 
     public function render_settings_page() {
+        $debug = get_option( 'vintel_zoho_debug', 0 );
         ?>
         <div class="wrap">
             <h1><?php esc_html_e( 'Vintel Zoho Desk Settings', 'vintel-zoho-desk-connector' ); ?></h1>
+
             <form method="post" action="options.php">
                 <?php
-                    settings_fields( 'vintel_zoho_options' );
-                    do_settings_sections( 'vintel_zoho_options' );
-                    $debug = get_option( 'vintel_zoho_debug', 0 );
+                settings_fields( 'vintel_zoho_settings' );
+                ?>
+                <table class="form-table" role="presentation">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><label for="vintel_zoho_client_id"><?php esc_html_e( 'Zoho Client ID', 'vintel-zoho-desk-connector' ); ?></label></th>
+                            <td><input name="vintel_zoho_client_id" type="text" id="vintel_zoho_client_id" value="<?php echo esc_attr( get_option( 'vintel_zoho_client_id' ) ); ?>" class="regular-text" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="vintel_zoho_client_secret"><?php esc_html_e( 'Zoho Client Secret', 'vintel-zoho-desk-connector' ); ?></label></th>
+                            <td><input name="vintel_zoho_client_secret" type="text" id="vintel_zoho_client_secret" value="<?php echo esc_attr( get_option( 'vintel_zoho_client_secret' ) ); ?>" class="regular-text" /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="vintel_zoho_redirect_uri"><?php esc_html_e( 'Redirect URI', 'vintel-zoho-desk-connector' ); ?></label></th>
+                            <td><input name="vintel_zoho_redirect_uri" type="text" id="vintel_zoho_redirect_uri" value="<?php echo esc_attr( get_option( 'vintel_zoho_redirect_uri' ) ); ?>" class="regular-text" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <?php submit_button(); ?>
+            </form>
+
+            <hr />
+
+            <?php
+            $token      = get_option( 'vintel_zoho_access_token' );
+            $expires_at = get_option( 'vintel_zoho_token_expires_at' );
+            if ( $token ) {
+                echo '<p>' . sprintf( esc_html__( 'Access Token Expires: %s', 'vintel-zoho-desk-connector' ), esc_html( $expires_at ) ) . '</p>';
+            } else {
+                echo '<p>' . esc_html__( 'No access token stored.', 'vintel-zoho-desk-connector' ) . '</p>';
+            }
+            ?>
+
+            <p>
+                <a href="<?php echo esc_url( $this->get_auth_url() ); ?>" class="button button-secondary">
+                    <?php esc_html_e( 'Connect to Zoho', 'vintel-zoho-desk-connector' ); ?>
+                </a>
+            </p>
+
+            <hr />
+
+            <form method="post" action="options.php">
+                <?php
+                settings_fields( 'vintel_zoho_options' );
+                do_settings_sections( 'vintel_zoho_options' );
                 ?>
                 <table class="form-table" role="presentation">
                     <tr>
