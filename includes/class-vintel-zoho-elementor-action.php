@@ -20,8 +20,9 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
         $widget->start_controls_section(
             'section_vintel_zoho',
             [
-                'label' => __( 'Zoho Desk', 'vintel-zoho-desk-connector' ),
-                'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+                'label'     => __( 'Zoho Desk', 'vintel-zoho-desk-connector' ),
+                'tab'       => \Elementor\Controls_Manager::TAB_CONTENT,
+                'condition' => [ 'submit_actions' => $this->get_name() ],
             ]
         );
 
@@ -129,6 +130,11 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
 
 
     public function on_export( $element ) {
-        // No special export handling needed.
+        unset( $element['vintel_zoho_email_field'] );
+        unset( $element['vintel_zoho_subject_field'] );
+        unset( $element['vintel_zoho_message_field'] );
+        unset( $element['vintel_zoho_department_id'] );
+
+        return $element;
     }
 }
