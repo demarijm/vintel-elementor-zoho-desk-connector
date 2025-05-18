@@ -54,6 +54,16 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
             ]
         );
 
+        $widget->add_control(
+            'vintel_zoho_department_id',
+            [
+                'label'       => __( 'Department ID', 'vintel-zoho-desk-connector' ),
+                'type'        => \Elementor\Controls_Manager::TEXT,
+                'description' => __( 'Optional Zoho Desk department ID', 'vintel-zoho-desk-connector' ),
+                'dynamic'     => [ 'active' => true ],
+            ]
+        );
+
         $widget->end_controls_section();
     }
 
@@ -65,37 +75,44 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
         return $fields;
     }
 
-    public function run( $record, $ajax_handler ) {
-        $form_settings = $record->get( 'form_settings' );
-        $fields        = $record->get( 'fields' );
+  public function run( $record, $ajax_handler ) {
+    $settings = $record->get( 'form_settings' );
+    $fields   = $record->get( 'fields' );
 
-        $email_field   = isset( $form_settings['vintel_zoho_email_field'] ) ? $form_settings['vintel_zoho_email_field'] : '';
-        $subject_field = isset( $form_settings['vintel_zoho_subject_field'] ) ? $form_settings['vintel_zoho_subject_field'] : '';
-        $message_field = isset( $form_settings['vintel_zoho_message_field'] ) ? $form_settings['vintel_zoho_message_field'] : '';
+    $email_field   = $settings['vintel_zoho_email_field'] ?? '';
+    $subject_field = $settings['vintel_zoho_subject_field'] ?? '';
+    $message_field = $settings['vintel_zoho_message_field'] ?? '';
+    $department    = $settings['vintel_zoho_department_id'] ?? '';
 
-        $email       = isset( $fields[ $email_field ] ) ? sanitize_email( $fields[ $email_field ]['value'] ) : '';
-        $subject     = isset( $fields[ $subject_field ] ) ? sanitize_text_field( $fields[ $subject_field ]['value'] ) : '';
-        $description = isset( $fields[ $message_field ] ) ? sanitize_textarea_field( $fields[ $message_field ]['value'] ) : '';
+    $email       = isset( $fields[ $email_field ] ) ? sanitize_email( $fields[ $email_field ]['value'] ) : '';
+    $subject     = isset( $fields[ $subject_field ] ) ? sanitize_text_field( $fields[ $subject_field ]['value'] ) : '';
+    $description = isset( $fields[ $message_field ] ) ? sanitize_textarea_field( $fields[ $message_field ]['value'] ) : '';
 
-        $api     = new Vintel_Zoho_API();
-        $payload = array(
-            'email'       => $email,
-            'subject'     => $subject,
-            'description' => $description,
-        );
+    $payload = [
+        'email'        => $email,
+        'subject'      => $subject,
+        'description'  => $description,
+    ];
 
-        vintel_zoho_log( 'Sending ticket to Zoho Desk: ' . print_r( $payload, true ) );
-        $response = $api->create_ticket( $payload );
-
-        if ( is_wp_error( $response ) ) {
-            $message = __( 'Zoho Desk Error: ', 'vintel-zoho-desk-connector' ) . $response->get_error_message();
-            $ajax_handler->add_error_message( $message );
-            $ajax_handler->is_success = false;
-            vintel_zoho_log( 'Error response: ' . $response->get_error_message() );
-        } else {
-            vintel_zoho_log( 'Ticket created: ' . print_r( $response, true ) );
-        }
+    if ( ! empty( $department ) ) {
+        $payload['department_id'] = $department;
     }
+
+    vintel_zoho_log( 'Sending ticket to Zoho Desk: ' . print_r( $payload, true ) );
+
+    $api      = new Vintel_Zoho_API();
+    $response = $api->create_ticket( $payload );
+
+    if ( is_wp_error( $response ) ) {
+        $message = __( 'Zoho Desk Error: ', 'vintel-zoho-desk-connector' ) . $response->get_error_message();
+        $ajax_handler->add_error_message( $message );
+        $ajax_handler->is_success = false;
+        vintel_zoho_log( 'Error response: ' . $response->get_error_message() );
+    } else {
+        vintel_zoho_log( 'Ticket created: ' . print_r( $response, true ) );
+    }
+}
+
 
     public function on_export( $element ) {
         // No special export handling needed.
