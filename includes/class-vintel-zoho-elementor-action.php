@@ -69,9 +69,23 @@ class Vintel_Zoho_Elementor_Action extends Action_Base {
 
     private function get_form_fields( $widget ) {
         $fields = [];
-        foreach ( $widget->get_form_fields() as $id => $field ) {
-            $fields[ $id ] = $field['field_label'];
+
+        if ( method_exists( $widget, 'get_form_fields' ) ) {
+            $form_fields = $widget->get_form_fields();
+        } else {
+            // Elementor 3.18+ stores fields in widget settings.
+            $form_fields = $widget->get_settings_for_display( 'form_fields' );
         }
+
+        if ( ! is_array( $form_fields ) ) {
+            return $fields;
+        }
+
+        foreach ( $form_fields as $id => $field ) {
+            $label         = $field['field_label'] ?? ( $field['label'] ?? $id );
+            $fields[ $id ] = $label;
+        }
+
         return $fields;
     }
 
